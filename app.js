@@ -129,6 +129,9 @@ class AdminApp {
         // Initialize community modal
         this.initCommunityModal();
 
+        // Initialize place modal
+        this.initPlaceModal();
+
         // Load initial page data
         this.loadPageData(this.currentPage);
     }
@@ -219,6 +222,9 @@ class AdminApp {
                 break;
             case 'feedback':
                 await this.loadFeedbackData();
+                break;
+            case 'places':
+                await this.loadPlacesData();
                 break;
         }
     }
@@ -617,6 +623,232 @@ class AdminApp {
         alert('Delete functionality will be implemented');
     }
 
+    // Places Management Functions
+    initPlaceModal() {
+        const addBtn = document.getElementById('addPlaceBtn');
+        const modal = document.getElementById('placeModal');
+        const closeBtn = document.getElementById('closePlaceModal');
+        const cancelBtn = document.getElementById('cancelPlaceBtn');
+        const form = document.getElementById('placeForm');
+
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                if (modal) modal.style.display = 'flex';
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (modal) modal.style.display = 'none';
+                if (form) form.reset();
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                if (modal) modal.style.display = 'none';
+                if (form) form.reset();
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.createPlace();
+            });
+        }
+
+        // Close modal when clicking outside
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    if (form) form.reset();
+                }
+            });
+        }
+    }
+
+    async loadPlacesData() {
+        const tbody = document.getElementById('placesTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading...</td></tr>';
+
+        try {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                this.handleLogout();
+                return;
+            }
+
+            const response = await fetch(`${this.apiBaseUrl}/places?skip=0&limit=100`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.renderPlacesTable(data);
+            } else {
+                if (response.status === 401 || response.status === 403) {
+                    this.handleLogout();
+                    return;
+                }
+                const errorData = await response.json().catch(() => ({}));
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Failed to load: ${errorData.detail || 'Unknown error'}</td></tr>`;
+            }
+        } catch (error) {
+            console.error('Error loading places:', error);
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Error loading data. Please check your connection.</td></tr>';
+        }
+    }
+
+    renderPlacesTable(places) {
+        const tbody = document.getElementById('placesTableBody');
+        if (!tbody) return;
+
+        if (!places || places.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No places found. Add your first place!</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = places.map(place => {
+            const imageUrl = place.profile_picture 
+                ? `${this.apiBaseUrl.replace('/api/v1', '')}/uploads/${place.profile_picture}`
+                : '';
+            const imageCell = imageUrl 
+                ? `<img src="${imageUrl}" alt="${place.place_name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">`
+                : 'No image';
+            const createdDate = place.created_at ? new Date(place.created_at).toLocaleDateString() : 'N/A';
+            const description = place.description ? (place.description.length > 50 ? place.description.substring(0, 50) + '...' : place.description) : '';
+
+            return `
+                <tr>
+                    <td>${place.id}</td>
+                    <td>${place.place_name || 'N/A'}</td>
+                    <td>${place.location || 'N/A'}</td>
+                    <td>${place.distance || 'N/A'}</td>
+                    <td>${description}</td>
+                    <td>${imageCell}</td>
+                    <td>${createdDate}</td>
+                    <td>
+                        <button class="btn-action" onclick="adminApp.viewPlace(${place.id})" title="View">View</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async createPlace() {
+        const nameInput = document.getElementById('placeName');
+        const locationInput = document.getElementById('placeLocation');
+        const distanceInput = document.getElementById('placeDistance');
+        const descriptionInput = document.getElementById('placeDescription');
+        const photoInput = document.getElementById('placePhoto');
+
+        if (!nameInput || !locationInput || !distanceInput || !descriptionInput) return;
+
+        const placeName = nameInput.value.trim();
+        const location = locationInput.value.trim();
+        const distance = distanceInput.value.trim();
+        const description = descriptionInput.value.trim();
+        const file = photoInput?.files[0];
+
+        if (!placeName || !location || !distance || !description) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                this.handleLogout();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('place_name', placeName);
+            formData.append('location', location);
+            formData.append('distance', distance);
+            formData.append('description', description);
+            if (file) {
+                formData.append('file', file);
+            }
+
+            const form = document.getElementById('placeForm');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const originalText = submitBtn ? submitBtn.textContent : 'Create Place';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating...';
+            }
+
+            const response = await fetch(`${this.apiBaseUrl}/admin/places`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                document.getElementById('placeModal').style.display = 'none';
+                document.getElementById('placeForm').reset();
+                await this.loadPlacesData();
+                alert('Place created successfully!');
+            } else {
+                let errorMessage = 'Failed to create place';
+                try {
+                    const errorData = await response.json();
+                    if (errorData.detail) {
+                        if (Array.isArray(errorData.detail)) {
+                            errorMessage = errorData.detail.map(err => {
+                                if (typeof err === 'object' && err.msg) {
+                                    return err.msg;
+                                }
+                                return String(err);
+                            }).join(', ');
+                        } else {
+                            errorMessage = errorData.detail;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing error response:', e);
+                }
+
+                if (response.status === 401 || response.status === 403) {
+                    alert('Session expired. Please login again.');
+                    this.handleLogout();
+                } else {
+                    alert(errorMessage);
+                }
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        } catch (error) {
+            console.error('Error creating place:', error);
+            alert('Error creating place. Please try again.');
+            const form = document.getElementById('placeForm');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Place';
+            }
+        }
+    }
+
+    viewPlace(placeId) {
+        console.log('View place:', placeId);
+        // TODO: Implement place view modal if needed
+    }
+
     initFeedbackToggle() {
         const feedbackToggle = document.getElementById('feedbackToggle');
         const featureToggle = document.getElementById('featureToggle');
@@ -888,6 +1120,232 @@ class AdminApp {
             console.error('Error updating user status:', error);
             alert('Error updating user status. Please try again.');
         }
+    }
+
+    // Places Management Functions
+    initPlaceModal() {
+        const addBtn = document.getElementById('addPlaceBtn');
+        const modal = document.getElementById('placeModal');
+        const closeBtn = document.getElementById('closePlaceModal');
+        const cancelBtn = document.getElementById('cancelPlaceBtn');
+        const form = document.getElementById('placeForm');
+
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                if (modal) modal.style.display = 'flex';
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (modal) modal.style.display = 'none';
+                if (form) form.reset();
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                if (modal) modal.style.display = 'none';
+                if (form) form.reset();
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.createPlace();
+            });
+        }
+
+        // Close modal when clicking outside
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                    if (form) form.reset();
+                }
+            });
+        }
+    }
+
+    async loadPlacesData() {
+        const tbody = document.getElementById('placesTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading...</td></tr>';
+
+        try {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                this.handleLogout();
+                return;
+            }
+
+            const response = await fetch(`${this.apiBaseUrl}/places?skip=0&limit=100`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.renderPlacesTable(data);
+            } else {
+                if (response.status === 401 || response.status === 403) {
+                    this.handleLogout();
+                    return;
+                }
+                const errorData = await response.json().catch(() => ({}));
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Failed to load: ${errorData.detail || 'Unknown error'}</td></tr>`;
+            }
+        } catch (error) {
+            console.error('Error loading places:', error);
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Error loading data. Please check your connection.</td></tr>';
+        }
+    }
+
+    renderPlacesTable(places) {
+        const tbody = document.getElementById('placesTableBody');
+        if (!tbody) return;
+
+        if (!places || places.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No places found. Add your first place!</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = places.map(place => {
+            const imageUrl = place.profile_picture 
+                ? `${this.apiBaseUrl.replace('/api/v1', '')}/uploads/${place.profile_picture}`
+                : '';
+            const imageCell = imageUrl 
+                ? `<img src="${imageUrl}" alt="${place.place_name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">`
+                : 'No image';
+            const createdDate = place.created_at ? new Date(place.created_at).toLocaleDateString() : 'N/A';
+            const description = place.description ? (place.description.length > 50 ? place.description.substring(0, 50) + '...' : place.description) : '';
+
+            return `
+                <tr>
+                    <td>${place.id}</td>
+                    <td>${place.place_name || 'N/A'}</td>
+                    <td>${place.location || 'N/A'}</td>
+                    <td>${place.distance || 'N/A'}</td>
+                    <td>${description}</td>
+                    <td>${imageCell}</td>
+                    <td>${createdDate}</td>
+                    <td>
+                        <button class="btn-action" onclick="adminApp.viewPlace(${place.id})" title="View">View</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async createPlace() {
+        const nameInput = document.getElementById('placeName');
+        const locationInput = document.getElementById('placeLocation');
+        const distanceInput = document.getElementById('placeDistance');
+        const descriptionInput = document.getElementById('placeDescription');
+        const photoInput = document.getElementById('placePhoto');
+
+        if (!nameInput || !locationInput || !distanceInput || !descriptionInput) return;
+
+        const placeName = nameInput.value.trim();
+        const location = locationInput.value.trim();
+        const distance = distanceInput.value.trim();
+        const description = descriptionInput.value.trim();
+        const file = photoInput?.files[0];
+
+        if (!placeName || !location || !distance || !description) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                this.handleLogout();
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('place_name', placeName);
+            formData.append('location', location);
+            formData.append('distance', distance);
+            formData.append('description', description);
+            if (file) {
+                formData.append('file', file);
+            }
+
+            const form = document.getElementById('placeForm');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const originalText = submitBtn ? submitBtn.textContent : 'Create Place';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating...';
+            }
+
+            const response = await fetch(`${this.apiBaseUrl}/admin/places`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                document.getElementById('placeModal').style.display = 'none';
+                document.getElementById('placeForm').reset();
+                await this.loadPlacesData();
+                alert('Place created successfully!');
+            } else {
+                let errorMessage = 'Failed to create place';
+                try {
+                    const errorData = await response.json();
+                    if (errorData.detail) {
+                        if (Array.isArray(errorData.detail)) {
+                            errorMessage = errorData.detail.map(err => {
+                                if (typeof err === 'object' && err.msg) {
+                                    return err.msg;
+                                }
+                                return String(err);
+                            }).join(', ');
+                        } else {
+                            errorMessage = errorData.detail;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing error response:', e);
+                }
+
+                if (response.status === 401 || response.status === 403) {
+                    alert('Session expired. Please login again.');
+                    this.handleLogout();
+                } else {
+                    alert(errorMessage);
+                }
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        } catch (error) {
+            console.error('Error creating place:', error);
+            alert('Error creating place. Please try again.');
+            const form = document.getElementById('placeForm');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Place';
+            }
+        }
+    }
+
+    viewPlace(placeId) {
+        console.log('View place:', placeId);
+        // TODO: Implement place view modal if needed
     }
 }
 

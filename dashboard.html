@@ -50,6 +50,11 @@
                             <span class="nav-text">Feedback</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="#places" class="nav-link" data-page="places">
+                            <span class="nav-text">Places</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
@@ -264,6 +269,73 @@
                     </div>
                     <div class="analytics-content">
                         <p class="empty-state">Analytics dashboard coming soon...</p>
+                    </div>
+                </div>
+
+                <!-- Places Page -->
+                <div id="places-page" class="page-content">
+                    <div class="page-header">
+                        <h2>Places Management</h2>
+                        <button id="addPlaceBtn" class="btn-primary">Add Place</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Place Name</th>
+                                    <th>Location</th>
+                                    <th>Distance</th>
+                                    <th>Description</th>
+                                    <th>Image</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="placesTableBody">
+                                <tr>
+                                    <td colspan="8" class="empty-state">Loading places...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add Place Modal -->
+                <div id="placeModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Create Place</h2>
+                            <button class="modal-close" id="closePlaceModal">&times;</button>
+                        </div>
+                        <form id="placeForm" class="modal-body">
+                            <div class="form-group">
+                                <label for="placeName">Place Name <span class="required">*</span></label>
+                                <input type="text" id="placeName" name="place_name" placeholder="Enter place name" required maxlength="200">
+                            </div>
+                            <div class="form-group">
+                                <label for="placeLocation">Location <span class="required">*</span></label>
+                                <input type="text" id="placeLocation" name="location" placeholder="Enter location" required maxlength="200">
+                            </div>
+                            <div class="form-group">
+                                <label for="placeDistance">Distance <span class="required">*</span></label>
+                                <input type="text" id="placeDistance" name="distance" placeholder="e.g., 1.5km away, 200m away" required maxlength="50">
+                                <small>Format: e.g., "1.5km away" or "200m away"</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="placeDescription">Description <span class="required">*</span></label>
+                                <textarea id="placeDescription" name="description" rows="4" placeholder="Enter description" required maxlength="2000"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="placePhoto">Profile Picture</label>
+                                <input type="file" id="placePhoto" name="file" accept="image/*">
+                                <small>Optional - JPG, PNG, etc.</small>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-secondary" id="cancelPlaceBtn">Cancel</button>
+                                <button type="submit" class="btn-primary">Create Place</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
