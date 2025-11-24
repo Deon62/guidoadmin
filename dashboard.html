@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quest Admin - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Left Navigation Panel -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Quest Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item active">
+                        <a href="#dashboard" class="nav-link" data-page="dashboard">
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#users" class="nav-link" data-page="users">
+                            <span class="nav-text">Users</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#posts" class="nav-link" data-page="posts">
+                            <span class="nav-text">Posts</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#trips" class="nav-link" data-page="trips">
+                            <span class="nav-text">Trips</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#communities" class="nav-link" data-page="communities">
+                            <span class="nav-text">Communities</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#analytics" class="nav-link" data-page="analytics">
+                            <span class="nav-text">Analytics</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#feedback" class="nav-link" data-page="feedback">
+                            <span class="nav-text">Feedback</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <button id="settingsBtn" class="btn-icon" title="Settings">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m16.364-6.364l-4.243 4.243m-4.242 4.242L7.05 7.05m9.9 9.9l-4.243-4.243m-4.242-4.242L7.05 16.95"></path>
+                        </svg>
+                    </button>
+                    <div class="user-info">
+                        <span class="user-name">Admin User</span>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard Content -->
+                <div id="dashboard-page" class="page-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Users</h3>
+                                <p class="stat-value" id="totalUsers">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Posts</h3>
+                                <p class="stat-value" id="totalPosts">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Trips</h3>
+                                <p class="stat-value" id="totalTrips">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Likes</h3>
+                                <p class="stat-value" id="totalLikes">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Communities</h3>
+                                <p class="stat-value" id="totalCommunities">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-section">
+                        <h2>Recent Activity</h2>
+                        <div class="activity-list">
+                            <p class="empty-state">No recent activity to display</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Page -->
+                <div id="users-page" class="page-content">
+                    <div class="page-header">
+                        <h2>User Management</h2>
+                        <button class="btn-primary">Add User</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Username</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="5" class="empty-state">Loading users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Posts Page -->
+                <div id="posts-page" class="page-content">
+                    <div class="page-header">
+                        <h2>Post Management</h2>
+                        <button class="btn-primary">View All Posts</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Author</th>
+                                    <th>Type</th>
+                                    <th>Likes</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="postsTableBody">
+                                <tr>
+                                    <td colspan="6" class="empty-state">Loading posts...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Trips Page -->
+                <div id="trips-page" class="page-content">
+                    <div class="page-header">
+                        <h2>Trip Management</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Place</th>
+                                    <th>Location</th>
+                                    <th>Date Visited</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tripsTableBody">
+                                <tr>
+                                    <td colspan="6" class="empty-state">Loading trips...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Communities Page -->
+                <div id="communities-page" class="page-content">
+                    <div class="page-header">
+                        <h2>Community Management</h2>
+                        <button id="addCommunityBtn" class="btn-primary">Add Community</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Verified</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="communitiesTableBody">
+                                <tr>
+                                    <td colspan="6" class="empty-state">Loading communities...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add Community Modal -->
+                <div id="communityModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Create Community</h2>
+                            <button class="modal-close" id="closeCommunityModal">&times;</button>
+                        </div>
+                        <form id="communityForm" class="modal-body">
+                            <div class="form-group">
+                                <label for="communityName">Name <span class="required">*</span></label>
+                                <input type="text" id="communityName" name="name" placeholder="q/community-name" required>
+                                <small>Must start with "q/"</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="communityDescription">Description <span class="required">*</span></label>
+                                <textarea id="communityDescription" name="description" rows="4" placeholder="Enter description (max 35 words)" required></textarea>
+                                <small><span id="wordCount">0</span>/35 words</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="communityPhoto">Profile Picture</label>
+                                <input type="file" id="communityPhoto" name="file" accept="image/*">
+                                <small>Optional - JPG, PNG, etc.</small>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-secondary" id="cancelCommunityBtn">Cancel</button>
+                                <button type="submit" class="btn-primary">Create Community</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div id="analytics-page" class="page-content">
+                    <div class="page-header">
+                        <h2>Analytics</h2>
+                    </div>
+                    <div class="analytics-content">
+                        <p class="empty-state">Analytics dashboard coming soon...</p>
+                    </div>
+                </div>
+
+                <!-- Feedback Page -->
+                <div id="feedback-page" class="page-content">
+                    <div class="page-header">
+                        <h2>Feedback & Feature Requests</h2>
+                        <div class="feedback-toggle">
+                            <button id="feedbackToggle" class="toggle-btn active" data-type="feedback">Feedback</button>
+                            <button id="featureToggle" class="toggle-btn" data-type="features">Feature Requests</button>
+                        </div>
+                    </div>
+                    <div class="feedback-content">
+                        <div id="feedback-list" class="feedback-list active">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>User</th>
+                                            <th>Message</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="feedbackTableBody">
+                                        <tr>
+                                            <td colspan="6" class="empty-state">Loading feedback...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div id="features-list" class="feedback-list">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>User</th>
+                                            <th>Feature Request</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="featuresTableBody">
+                                        <tr>
+                                            <td colspan="6" class="empty-state">Loading feature requests...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+
